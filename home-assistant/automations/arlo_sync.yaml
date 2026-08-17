@@ -1,0 +1,87 @@
+- id: camera_portail_arm_disarm_sync
+  alias: "Camera Portail Arm/Disarm Sync"
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id: input_boolean.camera_portail_armed
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.camera_portail_armed
+        state: 'on'
+      sequence:
+      - action: rest_command.camera_portail_arm
+        data:
+          arm: true
+    default:
+    - action: rest_command.camera_portail_arm
+      data:
+        arm: false
+  mode: single
+
+- id: camera_portail_led_sync
+  alias: "Camera Portail LED Sync"
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id: input_boolean.camera_portail_led
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.camera_portail_led
+        state: 'on'
+      sequence:
+      - action: rest_command.camera_portail_led
+        data:
+          led: true
+    default:
+    - action: rest_command.camera_portail_led
+      data:
+        led: false
+  mode: single
+
+- id: camera_entree_arm_disarm_sync
+  alias: "Camera Entree Arm/Disarm Sync"
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id: input_boolean.camera_entree_armed
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.camera_entree_armed
+        state: 'on'
+      sequence:
+      - action: rest_command.camera_entree_arm
+        data:
+          arm: true
+    default:
+    - action: rest_command.camera_entree_arm
+      data:
+        arm: false
+  mode: single
+
+- id: camera_entree_led_sync
+  alias: "Camera Entree LED Sync"
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id: input_boolean.camera_entree_led
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.camera_entree_led
+        state: 'on'
+      sequence:
+      - action: rest_command.camera_entree_led
+        data:
+          led: true
+    default:
+    - action: rest_command.camera_entree_led
+      data:
+        led: false
+  mode: single

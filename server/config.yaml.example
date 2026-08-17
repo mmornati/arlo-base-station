@@ -1,0 +1,37 @@
+# Production config for bschrameck/arlo-cam-api
+# Copy to config.yaml and adjust for your environment.
+#
+# Note: while waiting for upstream PRs #29, #30, #31 to be merged,
+# the production config.yaml should also include:
+#   BeaconIntervalSeconds: 60
+#   SnapshotOnMotion: true
+# and the bind-mounted patched server.py / api/api.py.
+
+WifiCountryCode: "US"
+VideoAntiFlickerRate: 60
+VideoQualityDefault: "default"
+
+# Notifications — most go to the arlo-snapshot sidecar via SnapshotOnMotion
+NotifyRegisteredAndStatusUpdate: true
+NotifyOnMotionAlert: true
+NotifyOnMotionTimeoutAlert: false
+NotifyOnAudioAlert: false
+NotifyOnButtonPressAlert: true
+
+# Snapshot-on-motion — POSTs to arlo-snapshot on every PIR alert
+# (requires the arlo-snapshot sidecar reachable at the URL below)
+SnapshotOnMotion: true
+
+# Keepalive beacon — sends a statusRequest every N seconds to each known
+# camera so they don't drop off WiFi (the Arlo firmware tracks
+# MaxMissedBeaconTime from the initial registerSet).
+BeaconIntervalSeconds: 60
+
+# Webhook URLs (optional — for sending events to external systems)
+MotionRecordingWebHookUrl: ""
+MotionTimeoutWebHookUrl: ""
+AudioRecordingWebHookUrl: ""
+UserRecordingWebHookUrl: ""
+StatusUpdateWebHookUrl: ""
+RegistrationWebHookUrl: ""
+ButtonPressWebHookUrl: ""

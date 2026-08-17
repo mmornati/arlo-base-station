@@ -1,0 +1,35 @@
+logLevel: info
+api: yes
+apiAddress: 0.0.0.0:9997
+
+rtspAddress: :8554
+rtspTransports: [tcp]
+
+paths:
+  cam1:
+    source: rtsp://192.168.2.3:554/live
+    sourceOnDemand: yes
+    sourceOnDemandStartTimeout: 30s
+    sourceOnDemandCloseAfter: 1s
+    maxReaders: 5
+
+  cam2:
+    source: rtsp://192.168.2.2:554/live
+    sourceOnDemand: yes
+    sourceOnDemandStartTimeout: 30s
+    sourceOnDemandCloseAfter: 1s
+    maxReaders: 5
+
+  cam3:
+    source: rtsp://192.168.2.103:554/live
+    sourceOnDemand: yes
+    sourceOnDemandStartTimeout: 30s
+    sourceOnDemandCloseAfter: 1s
+    maxReaders: 5
+
+  cam4:
+    source: rtsp://192.168.2.4:554/live
+    sourceOnDemand: yes
+    sourceOnDemandStartTimeout: 30s
+    sourceOnDemandCloseAfter: 1s
+    maxReaders: 5

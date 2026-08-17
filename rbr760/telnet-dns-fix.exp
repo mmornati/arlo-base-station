@@ -1,0 +1,74 @@
+#!/usr/bin/expect -f
+set timeout 10
+set router_ip "192.168.1.1"
+set username "admin"
+set password {<your_router_password>}
+
+spawn telnet $router_ip
+expect {
+    "login:" { send "$username\r" }
+    "Login:" { send "$username\r" }
+    timeout { puts "ERROR: timeout waiting for login prompt"; exit 1 }
+}
+expect {
+    "password:" { send "$password\r" }
+    "Password:" { send "$password\r" }
+    timeout { puts "ERROR: timeout waiting for password prompt"; exit 1 }
+}
+expect {
+    "#" { }
+    "$" { }
+    timeout { puts "ERROR: timeout waiting for shell prompt"; exit 1 }
+}
+
+send {uci delete dhcp.@dnsmasq[0].dhcp_option}
+send "\r"
+expect {
+    "#" { }
+    "$" { }
+    timeout { puts "ERROR: timeout after uci delete"; exit 1 }
+}
+
+send {uci add_list dhcp.@dnsmasq[0].dhcp_option='6,45.90.28.224'}
+send "\r"
+expect {
+    "#" { }
+    "$" { }
+    timeout { puts "ERROR: timeout after first add_list"; exit 1 }
+}
+
+send {uci add_list dhcp.@dnsmasq[0].dhcp_option='6,45.90.30.224'}
+send "\r"
+expect {
+    "#" { }
+    "$" { }
+    timeout { puts "ERROR: timeout after second add_list"; exit 1 }
+}
+
+send "uci commit\r"
+expect {
+    "#" { }
+    "$" { }
+    timeout { puts "ERROR: timeout after uci commit"; exit 1 }
+}
+
+send "/etc/init.d/dnsmasq restart\r"
+expect {
+    "#" { }
+    "$" { }
+    timeout { puts "ERROR: timeout after dnsmasq restart"; exit 1 }
+}
+
+send "cat /tmp/etc/dnsmasq.conf | grep dhcp-option\r"
+expect {
+    "#" { }
+    "$" { }
+    timeout { puts "ERROR: timeout verifying"; exit 1 }
+}
+
+puts "\n--- EXPECTED OUTPUT (dhcp-option lines) ---"
+puts $expect_out(buffer)
+puts "--- END ---"
+
+send "exit\r"
+expect eof

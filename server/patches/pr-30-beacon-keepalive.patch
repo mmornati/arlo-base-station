@@ -1,0 +1,47 @@
+diff --git a/config.yaml b/config.yaml
+index 0000001..0000002 100644
+--- a/config.yaml
++++ b/config.yaml
+@@ -20,3 +20,8 @@ VideoQualityDefault: "default"
+
+ NotifyOnButtonPressAlert: true
++
++# Interval (seconds) between keepalive statusRequest beacons sent to each
++# known camera. Mimics the Arlo base station beacon so cameras do not
++# assume the basestation is gone (MaxMissedBeaconTime) and drop WiFi.
++BeaconIntervalSeconds: 60
+
+diff --git a/server.py b/server.py
+index 0000001..0000002 100644
+--- a/server.py
++++ b/server.py
+@@ -40,6 +40,9 @@ NOTIFY_ON_BUTTON_PRESS_ALERT = config.get('NotifyOnButtonPressAlert', True)
+ NOTIFY_ON_REGISTRATION = config.get('NotifyRegisteredAndStatusUpdate', True)
+ NOTIFY_ON_STATUS_UPDATE = NOTIFY_ON_REGISTRATION
+ SNAPSHOT_ON_MOTION = config.get('SnapshotOnMotion', False)
++BEACON_INTERVAL_SECONDS = config.get('BeaconIntervalSeconds', 60)
+
+@@ -120,6 +123,52 @@ def handle_status(client_socket, ip, message):
+     # (existing logic — see upstream PR #30 for full diff)
+     ...
+
++class BeaconThread(threading.Thread):
++    def run(self):
++        while True:
++            time.sleep(BEACON_INTERVAL_SECONDS)
++            for serial in list(known_devices.keys()):
++                try:
++                    send_status_request(known_devices[serial])
++                except Exception as e:
++                    log.warning(f"[beacon] {serial} failed: {e}")
+
++known_devices = {}
+
+@@ -180,6 +229,10 @@ if __name__ == '__main__':
+     flask_thread = api.api.get_thread()
+     flask_thread.start()
++
++    beacon_thread = BeaconThread(name='BeaconThread', daemon=True)
++    beacon_thread.start()
++
+     server_thread.join()

@@ -1,0 +1,32 @@
+diff --git a/api/api.py b/api/api.py
+index 0000001..0000002 100644
+--- a/api/api.py
++++ b/api/api.py
+@@ -82,11 +82,13 @@ def user_stream_active(serial, req_body, device: Camera):
+     return flask.jsonify({"result": device.set_user_stream_active(int(active))})
+
++    # Note: original implementation had all this commented out
++    # (always returned {"result": true} without doing anything).
++    # PR #31 restored the real implementation.
++
+
+diff --git a/server.py b/server.py
+index 0000001..0000002 100644
+--- a/server.py
++++ b/server.py
+@@ -95,6 +95,17 @@ def handle_status(client_socket, ip, message):
+     device = DeviceDB.from_db_serial(message.SerialNumber)
+     if device is None:
+         # Auto-register: status may arrive before full registerSet on
+         # VMC4040P deep-sleep wake. Default SystemModelNumber to VMC4040P.
++        device = DeviceFactory.create(
++            serial=message.SerialNumber,
++            ip=ip,
++            model_number=getattr(message, 'SystemModelNumber', 'VMC4040P'),
++        )
++        DeviceDB.persist(device)
+
+@@ -180,6 +191,18 @@ if __name__ == '__main__':
+     if SNAPSHOT_ON_MOTION:
+         snapshot_url = config.get('SnapshotOnMotionUrl', 'http://arlo-snapshot:8000/snapshot/')
+         requests.post(snapshot_url + device.serial_number, timeout=10)

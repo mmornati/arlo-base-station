@@ -1,0 +1,29 @@
+- button:
+    - name: "Arlo Wake Jardin 1"
+      unique_id: arlo_wake_btn_jardin_1
+      icon: mdi:camera-wireless
+      press:
+        - action: rest_command.arlo_wake_jardin_1
+        - delay: "00:00:06"
+        - action: rest_command.arlo_snapshot_jardin_1
+    - name: "Arlo Wake Jardin 2"
+      unique_id: arlo_wake_btn_jardin_2
+      icon: mdi:camera-wireless
+      press:
+        - action: rest_command.arlo_wake_jardin_2
+        - delay: "00:00:06"
+        - action: rest_command.arlo_snapshot_jardin_2
+    - name: "Arlo Wake Portail"
+      unique_id: arlo_wake_btn_portail
+      icon: mdi:camera-wireless
+      press:
+        - action: rest_command.arlo_wake_portail
+        - delay: "00:00:06"
+        - action: rest_command.arlo_snapshot_portail
+    - name: "Arlo Wake Entree"
+      unique_id: arlo_wake_btn_entree
+      icon: mdi:camera-wireless
+      press:
+        - action: rest_command.arlo_wake_entree
+        - delay: "00:00:06"
+        - action: rest_command.arlo_snapshot_entree
