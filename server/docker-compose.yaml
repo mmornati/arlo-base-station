@@ -1,0 +1,52 @@
+services:
+  arlo-cam-api:
+    image: bschrameck/arlo-cam-api:latest
+    container_name: arlo-cam-api
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+      - "5000:5000"
+    volumes:
+      - ./config.yaml:/opt/arlo-cam-api/config.yaml:ro
+      - arlo-recordings:/recordings
+      # NOTE: For production, also bind-mount the patched files while waiting
+      # for upstream PRs #29, #30, #31 to be merged:
+      #   - ./patches/server.py:/opt/arlo-cam-api/server.py:ro
+      #   - ./patches/api/api.py:/opt/arlo-cam-api/api/api.py:ro
+    environment:
+      - HOST=0.0.0.0
+      - PORT=4000
+      - API_PORT=5000
+      - RECORDINGS_PATH=/recordings
+
+  arlo-snapshot:
+    build: ../arlo-snapshot
+    image: arlo-snapshot:local
+    container_name: arlo-snapshot
+    restart: unless-stopped
+    depends_on:
+      - arlo-cam-api
+    ports:
+      - "8000:8000"
+    environment:
+      - ARLO_API=http://arlo-cam-api:5000
+      - DEVICE_CACHE_TTL=120
+      - USERSTREAM_TTL=60
+      - STREAM_WARMUP_SEC=6
+      - RTSP_RETRIES=3
+      - RTSP_RETRY_DELAY=2
+      - MAX_WIDTH=1280
+      - JPEG_QUALITY=75
+
+  mediamtx:
+    image: bluenviron/mediamtx:latest
+    container_name: mediamtx
+    restart: unless-stopped
+    ports:
+      - "8554:8554"
+      - "127.0.0.1:9997:9997"
+    volumes:
+      - ./mediamtx.yml:/mediamtx.yml:ro
+
+volumes:
+  arlo-recordings:

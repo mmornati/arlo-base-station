@@ -1,0 +1,216 @@
+input_select:
+  arlo_wake_mode:
+    name: "Arlo Wake Mode"
+    icon: mdi:camera-control
+    options:
+      - "off"
+      - "periodic"
+      - "on-demand"
+    initial: "periodic"
+
+input_number:
+  arlo_wake_interval_minutes:
+    name: "Arlo Wake Interval (min)"
+    icon: mdi:timer-outline
+    min: 1
+    max: 60
+    step: 1
+    initial: 15
+
+rest_command:
+  arlo_wake_jardin_1:
+    url: "http://192.168.1.48:5000/device/XXXXXXXXXXXX/userstreamactive"
+    method: POST
+    content_type: "application/json"
+    payload: '{"active": true, "duration": 1800}'
+    timeout: 8
+  arlo_wake_jardin_2:
+    url: "http://192.168.1.48:5000/device/XXXXXXXXXXXX/userstreamactive"
+    method: POST
+    content_type: "application/json"
+    payload: '{"active": true, "duration": 1800}'
+    timeout: 8
+  arlo_wake_portail:
+    url: "http://192.168.1.48:5000/device/XXXXXXXXXXXX/userstreamactive"
+    method: POST
+    content_type: "application/json"
+    payload: '{"active": true, "duration": 1800}'
+    timeout: 8
+  arlo_wake_entree:
+    url: "http://192.168.1.48:5000/device/XXXXXXXXXXXX/userstreamactive"
+    method: POST
+    content_type: "application/json"
+    payload: '{"active": true, "duration": 1800}'
+    timeout: 8
+  arlo_snapshot_jardin_1:
+    url: "http://192.168.1.48:8000/snapshot/XXXXXXXXXXXX"
+    method: POST
+    timeout: 30
+  arlo_snapshot_jardin_2:
+    url: "http://192.168.1.48:8000/snapshot/XXXXXXXXXXXX"
+    method: POST
+    timeout: 30
+  arlo_snapshot_portail:
+    url: "http://192.168.1.48:8000/snapshot/XXXXXXXXXXXX"
+    method: POST
+    timeout: 30
+  arlo_snapshot_entree:
+    url: "http://192.168.1.48:8000/snapshot/XXXXXXXXXXXX"
+    method: POST
+    timeout: 30
+
+script:
+  arlo_wake_all:
+    alias: "Arlo Wake All Cameras"
+    icon: mdi:camera-array
+    sequence:
+      - parallel:
+          - action: rest_command.arlo_wake_jardin_1
+          - action: rest_command.arlo_wake_jardin_2
+          - action: rest_command.arlo_wake_portail
+          - action: rest_command.arlo_wake_entree
+      - delay: "00:00:06"
+      - parallel:
+          - action: rest_command.arlo_snapshot_jardin_1
+          - action: rest_command.arlo_snapshot_jardin_2
+          - action: rest_command.arlo_snapshot_portail
+          - action: rest_command.arlo_snapshot_entree
+
+automation:
+  - id: arlo_wake_periodic
+    alias: "Arlo Wake Periodic"
+    description: "Periodically wakes all Arlo cameras to keep them reachable for RTSP"
+    mode: single
+    trigger:
+      - platform: time_pattern
+        minutes: "/15"
+    condition:
+      - condition: state
+        entity_id: input_select.arlo_wake_mode
+        state: "periodic"
+    action:
+      - action: script.arlo_wake_all
+
+  - id: arlo_wake_on_view_jardin_1
+    alias: "Arlo Wake on View - Jardin 1"
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: camera.garden_arlo_jardin_1
+        from: "idle"
+        to: "streaming"
+    condition:
+      - condition: state
+        entity_id: input_select.arlo_wake_mode
+        state: "on-demand"
+    action:
+      - action: rest_command.arlo_wake_jardin_1
+
+  - id: arlo_wake_on_view_jardin_2
+    alias: "Arlo Wake on View - Jardin 2"
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: camera.garden_arlo_jardin_2
+        from: "idle"
+        to: "streaming"
+    condition:
+      - condition: state
+        entity_id: input_select.arlo_wake_mode
+        state: "on-demand"
+    action:
+      - action: rest_command.arlo_wake_jardin_2
+
+  - id: arlo_wake_on_view_portail
+    alias: "Arlo Wake on View - Portail"
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: camera.garden_arlo_portail
+        from: "idle"
+        to: "streaming"
+    condition:
+      - condition: state
+        entity_id: input_select.arlo_wake_mode
+        state: "on-demand"
+    action:
+      - action: rest_command.arlo_wake_portail
+
+  - id: arlo_wake_on_view_entree
+    alias: "Arlo Wake on View - Entree"
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: camera.garden_arlo_entree
+        from: "idle"
+        to: "streaming"
+    condition:
+      - condition: state
+        entity_id: input_select.arlo_wake_mode
+        state: "on-demand"
+    action:
+      - action: rest_command.arlo_wake_entree
+
+  - id: arlo_wake_on_pir_jardin_1
+    alias: "Arlo Wake on PIR - Jardin 1"
+    mode: single
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.arlo_jardin_1_pir_triggers
+        above: "{{ states('sensor.arlo_jardin_1_pir_triggers') | int(0) }}"
+    condition:
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: input_select.arlo_wake_mode
+            state: "off"
+    action:
+      - action: rest_command.arlo_wake_jardin_1
+
+  - id: arlo_wake_on_pir_jardin_2
+    alias: "Arlo Wake on PIR - Jardin 2"
+    mode: single
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.arlo_jardin_2_pir_triggers
+        above: "{{ states('sensor.arlo_jardin_2_pir_triggers') | int(0) }}"
+    condition:
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: input_select.arlo_wake_mode
+            state: "off"
+    action:
+      - action: rest_command.arlo_wake_jardin_2
+
+  - id: arlo_wake_on_pir_portail
+    alias: "Arlo Wake on PIR - Portail"
+    mode: single
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.arlo_portail_pir_triggers
+        above: "{{ states('sensor.arlo_portail_pir_triggers') | int(0) }}"
+    condition:
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: input_select.arlo_wake_mode
+            state: "off"
+    action:
+      - action: rest_command.arlo_wake_portail
+
+  - id: arlo_wake_on_pir_entree
+    alias: "Arlo Wake on PIR - Entree"
+    mode: single
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.arlo_entree_pir_triggers
+        above: "{{ states('sensor.arlo_entree_pir_triggers') | int(0) }}"
+    condition:
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: input_select.arlo_wake_mode
+            state: "off"
+    action:
+      - action: rest_command.arlo_wake_entree

@@ -1,0 +1,521 @@
+rest_command:
+  camera_jardin_1_arm:
+    url: "http://192.168.1.48:5000/device/XXXXXXXXXXXX/arm"
+    method: POST
+    content_type: "application/json"
+    payload: '{"PIRTargetState": "{{ "Armed" if arm else "Disarmed" }}"}'
+  camera_jardin_2_arm:
+    url: "http://192.168.1.48:5000/device/XXXXXXXXXXXX/arm"
+    method: POST
+    content_type: "application/json"
+    payload: '{"PIRTargetState": "{{ "Armed" if arm else "Disarmed" }}"}'
+  camera_portail_arm:
+    url: "http://192.168.1.48:5000/device/XXXXXXXXXXXX/arm"
+    method: POST
+    content_type: "application/json"
+    payload: '{"PIRTargetState": "{{ "Armed" if arm else "Disarmed" }}"}'
+  camera_jardin_1_led:
+    url: "http://192.168.1.48:5000/device/XXXXXXXXXXXX/pirled"
+    method: POST
+    content_type: "application/json"
+    payload: '{"enabled": {{ led | lower }}, "sensitivity": 80}'
+  camera_jardin_2_led:
+    url: "http://192.168.1.48:5000/device/XXXXXXXXXXXX/pirled"
+    method: POST
+    content_type: "application/json"
+    payload: '{"enabled": {{ led | lower }}, "sensitivity": 80}'
+  camera_portail_led:
+    url: "http://192.168.1.48:5000/device/XXXXXXXXXXXX/pirled"
+    method: POST
+    content_type: "application/json"
+    payload: '{"enabled": {{ led | lower }}, "sensitivity": 80}'
+  camera_entree_arm:
+    url: "http://192.168.1.48:5000/device/XXXXXXXXXXXX/arm"
+    method: POST
+    content_type: "application/json"
+    payload: '{"PIRTargetState": "{{ "Armed" if arm else "Disarmed" }}"}'
+  camera_entree_led:
+    url: "http://192.168.1.48:5000/device/XXXXXXXXXXXX/pirled"
+    method: POST
+    content_type: "application/json"
+    payload: '{"enabled": {{ led | lower }}, "sensitivity": 80}'
+
+sensor:
+  - platform: rest
+    name: "Arlo Jardin 1 Status"
+    resource: "http://192.168.1.48:5000/device/XXXXXXXXXXXX"
+    value_template: "{{ value_json.BatPercent | int(-1) }}"
+    unit_of_measurement: "%"
+    device_class: battery
+    scan_interval: 300
+    json_attributes:
+      - BatPercent
+      - ChargingState
+      - SignalStrengthIndicator
+      - WifiRSSI
+      - Temperature
+      - Uptime
+      - PIREvents
+      - PIRTriggers
+      - MotionStreamed
+      - UserStreamed
+      - Streamed
+      - Bat1Volt
+      - FailedStreams
+      - CameraOnline
+      - CameraOffline
+      - IRLEDsOn
+      - SpotlightEnabled
+      - WifiConnectionCount
+      - SystemFirmwareVersion
+      - HardwareRevision
+      - WifiChannel
+      - PoweredOn
+      - CriticalBatStatus
+      - ChargerTech
+      - BatTech
+
+  - platform: rest
+    name: "Arlo Jardin 2 Status"
+    resource: "http://192.168.1.48:5000/device/XXXXXXXXXXXX"
+    value_template: "{{ value_json.BatPercent | int(-1) }}"
+    unit_of_measurement: "%"
+    device_class: battery
+    scan_interval: 300
+    json_attributes:
+      - BatPercent
+      - ChargingState
+      - SignalStrengthIndicator
+      - WifiRSSI
+      - Temperature
+      - Uptime
+      - PIREvents
+      - PIRTriggers
+      - MotionStreamed
+      - UserStreamed
+      - Streamed
+      - Bat1Volt
+      - FailedStreams
+      - CameraOnline
+      - CameraOffline
+      - IRLEDsOn
+      - SpotlightEnabled
+      - WifiConnectionCount
+      - SystemFirmwareVersion
+      - HardwareRevision
+      - WifiChannel
+      - PoweredOn
+      - CriticalBatStatus
+      - ChargerTech
+      - BatTech
+
+  - platform: rest
+    name: "Arlo Portail Status"
+    resource: "http://192.168.1.48:5000/device/XXXXXXXXXXXX"
+    value_template: "{{ value_json.BatPercent | int(-1) }}"
+    unit_of_measurement: "%"
+    device_class: battery
+    scan_interval: 300
+    json_attributes:
+      - BatPercent
+      - ChargingState
+      - SignalStrengthIndicator
+      - WifiRSSI
+      - Temperature
+      - Uptime
+      - PIREvents
+      - PIRTriggers
+      - MotionStreamed
+      - UserStreamed
+      - Streamed
+      - Bat1Volt
+      - FailedStreams
+      - CameraOnline
+      - CameraOffline
+      - IRLEDsOn
+      - SpotlightEnabled
+      - WifiConnectionCount
+      - SystemFirmwareVersion
+      - HardwareRevision
+      - WifiChannel
+      - PoweredOn
+      - CriticalBatStatus
+      - ChargerTech
+      - BatTech
+  - platform: rest
+    name: "Arlo Entree Status"
+    resource: "http://192.168.1.48:5000/device/XXXXXXXXXXXX"
+    value_template: "{{ value_json.BatPercent | int(-1) }}"
+    unit_of_measurement: "%"
+    device_class: battery
+    scan_interval: 300
+    json_attributes:
+      - BatPercent
+      - ChargingState
+      - SignalStrengthIndicator
+      - WifiRSSI
+      - Temperature
+      - Uptime
+      - PIREvents
+      - PIRTriggers
+      - MotionStreamed
+      - UserStreamed
+      - Streamed
+      - Bat1Volt
+      - FailedStreams
+      - CameraOnline
+      - CameraOffline
+      - IRLEDsOn
+      - SpotlightEnabled
+      - WifiConnectionCount
+      - SystemFirmwareVersion
+      - HardwareRevision
+      - WifiChannel
+      - PoweredOn
+      - CriticalBatStatus
+      - ChargerTech
+      - BatTech
+
+template:
+  - sensor:
+      - name: "Jardin 1 Temperature"
+        unique_id: arlo_j1_temp
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        state: "{{ state_attr('sensor.arlo_jardin_1_status', 'Temperature') | int(-99) }}"
+      - name: "Jardin 1 Charging"
+        unique_id: arlo_j1_charging
+        state: "{{ state_attr('sensor.arlo_jardin_1_status', 'ChargingState') | default('Off') }}"
+      - name: "Jardin 1 Signal"
+        unique_id: arlo_j1_signal
+        icon: mdi:wifi
+        state: "{{ state_attr('sensor.arlo_jardin_1_status', 'SignalStrengthIndicator') | int(0) }}"
+      - name: "Jardin 1 WiFi RSSI"
+        unique_id: arlo_j1_rssi
+        unit_of_measurement: "dBm"
+        state_class: measurement
+        icon: mdi:wifi-arrow-up-down
+        state: "{{ state_attr('sensor.arlo_jardin_1_status', 'WifiRSSI') | int(-99) }}"
+      - name: "Jardin 1 Uptime"
+        unique_id: arlo_j1_uptime
+        unit_of_measurement: "s"
+        icon: mdi:clock-outline
+        state: "{{ state_attr('sensor.arlo_jardin_1_status', 'Uptime') | int(0) }}"
+      - name: "Jardin 1 PIR Events"
+        unique_id: arlo_j1_pir_events
+        icon: mdi:motion-sensor
+        state: "{{ state_attr('sensor.arlo_jardin_1_status', 'PIREvents') | int(0) }}"
+      - name: "Jardin 1 PIR Triggers"
+        unique_id: arlo_j1_pir_triggers
+        icon: mdi:motion-sensor
+        state: "{{ state_attr('sensor.arlo_jardin_1_status', 'PIRTriggers') | int(0) }}"
+      - name: "Jardin 1 Motion Streams"
+        unique_id: arlo_j1_motion_streamed
+        icon: mdi:video
+        state: "{{ state_attr('sensor.arlo_jardin_1_status', 'MotionStreamed') | int(0) }}"
+      - name: "Jardin 1 User Streams"
+        unique_id: arlo_j1_user_streamed
+        icon: mdi:video-switch
+        state: "{{ state_attr('sensor.arlo_jardin_1_status', 'UserStreamed') | int(0) }}"
+      - name: "Jardin 1 Total Streams"
+        unique_id: arlo_j1_streamed
+        icon: mdi:filmstrip
+        state: "{{ state_attr('sensor.arlo_jardin_1_status', 'Streamed') | int(0) }}"
+      - name: "Jardin 1 Battery Voltage"
+        unique_id: arlo_j1_bat_voltage
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+        icon: mdi:battery
+        state: "{{ state_attr('sensor.arlo_jardin_1_status', 'Bat1Volt') | float(0) }}"
+      - name: "Jardin 1 Failed Streams"
+        unique_id: arlo_j1_failed_streams
+        icon: mdi:video-off
+        state: "{{ state_attr('sensor.arlo_jardin_1_status', 'FailedStreams') | int(0) }}"
+      - name: "Jardin 1 Camera Online"
+        unique_id: arlo_j1_online
+        unit_of_measurement: "s"
+        icon: mdi:camera
+        state: "{{ state_attr('sensor.arlo_jardin_1_status', 'CameraOnline') | int(0) }}"
+      - name: "Jardin 1 WiFi Channel"
+        unique_id: arlo_j1_wifi_channel
+        icon: mdi:wifi
+        state: "{{ state_attr('sensor.arlo_jardin_1_status', 'WifiChannel') | int(0) }}"
+      - name: "Jardin 1 Firmware"
+        unique_id: arlo_j1_firmware
+        icon: mdi:chip
+        state: "{{ state_attr('sensor.arlo_jardin_1_status', 'SystemFirmwareVersion') | default('unknown') }}"
+
+      - name: "Jardin 2 Temperature"
+        unique_id: arlo_j2_temp
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        state: "{{ state_attr('sensor.arlo_jardin_2_status', 'Temperature') | int(-99) }}"
+      - name: "Jardin 2 Charging"
+        unique_id: arlo_j2_charging
+        state: "{{ state_attr('sensor.arlo_jardin_2_status', 'ChargingState') | default('Off') }}"
+      - name: "Jardin 2 Signal"
+        unique_id: arlo_j2_signal
+        icon: mdi:wifi
+        state: "{{ state_attr('sensor.arlo_jardin_2_status', 'SignalStrengthIndicator') | int(0) }}"
+      - name: "Jardin 2 WiFi RSSI"
+        unique_id: arlo_j2_rssi
+        unit_of_measurement: "dBm"
+        state_class: measurement
+        icon: mdi:wifi-arrow-up-down
+        state: "{{ state_attr('sensor.arlo_jardin_2_status', 'WifiRSSI') | int(-99) }}"
+      - name: "Jardin 2 Uptime"
+        unique_id: arlo_j2_uptime
+        unit_of_measurement: "s"
+        icon: mdi:clock-outline
+        state: "{{ state_attr('sensor.arlo_jardin_2_status', 'Uptime') | int(0) }}"
+      - name: "Jardin 2 PIR Events"
+        unique_id: arlo_j2_pir_events
+        icon: mdi:motion-sensor
+        state: "{{ state_attr('sensor.arlo_jardin_2_status', 'PIREvents') | int(0) }}"
+      - name: "Jardin 2 PIR Triggers"
+        unique_id: arlo_j2_pir_triggers
+        icon: mdi:motion-sensor
+        state: "{{ state_attr('sensor.arlo_jardin_2_status', 'PIRTriggers') | int(0) }}"
+      - name: "Jardin 2 Motion Streams"
+        unique_id: arlo_j2_motion_streamed
+        icon: mdi:video
+        state: "{{ state_attr('sensor.arlo_jardin_2_status', 'MotionStreamed') | int(0) }}"
+      - name: "Jardin 2 User Streams"
+        unique_id: arlo_j2_user_streamed
+        icon: mdi:video-switch
+        state: "{{ state_attr('sensor.arlo_jardin_2_status', 'UserStreamed') | int(0) }}"
+      - name: "Jardin 2 Total Streams"
+        unique_id: arlo_j2_streamed
+        icon: mdi:filmstrip
+        state: "{{ state_attr('sensor.arlo_jardin_2_status', 'Streamed') | int(0) }}"
+      - name: "Jardin 2 Battery Voltage"
+        unique_id: arlo_j2_bat_voltage
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+        icon: mdi:battery
+        state: "{{ state_attr('sensor.arlo_jardin_2_status', 'Bat1Volt') | float(0) }}"
+      - name: "Jardin 2 Failed Streams"
+        unique_id: arlo_j2_failed_streams
+        icon: mdi:video-off
+        state: "{{ state_attr('sensor.arlo_jardin_2_status', 'FailedStreams') | int(0) }}"
+      - name: "Jardin 2 Camera Online"
+        unique_id: arlo_j2_online
+        unit_of_measurement: "s"
+        icon: mdi:camera
+        state: "{{ state_attr('sensor.arlo_jardin_2_status', 'CameraOnline') | int(0) }}"
+      - name: "Jardin 2 WiFi Channel"
+        unique_id: arlo_j2_wifi_channel
+        icon: mdi:wifi
+        state: "{{ state_attr('sensor.arlo_jardin_2_status', 'WifiChannel') | int(0) }}"
+      - name: "Jardin 2 Firmware"
+        unique_id: arlo_j2_firmware
+        icon: mdi:chip
+        state: "{{ state_attr('sensor.arlo_jardin_2_status', 'SystemFirmwareVersion') | default('unknown') }}"
+
+      - name: "Portail Temperature"
+        unique_id: arlo_portail_temp
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        state: "{{ state_attr('sensor.arlo_portail_status', 'Temperature') | int(-99) }}"
+      - name: "Portail Charging"
+        unique_id: arlo_portail_charging
+        state: "{{ state_attr('sensor.arlo_portail_status', 'ChargingState') | default('Off') }}"
+      - name: "Portail Signal"
+        unique_id: arlo_portail_signal
+        icon: mdi:wifi
+        state: "{{ state_attr('sensor.arlo_portail_status', 'SignalStrengthIndicator') | int(0) }}"
+      - name: "Portail WiFi RSSI"
+        unique_id: arlo_portail_rssi
+        unit_of_measurement: "dBm"
+        state_class: measurement
+        icon: mdi:wifi-arrow-up-down
+        state: "{{ state_attr('sensor.arlo_portail_status', 'WifiRSSI') | int(-99) }}"
+      - name: "Portail Uptime"
+        unique_id: arlo_portail_uptime
+        unit_of_measurement: "s"
+        icon: mdi:clock-outline
+        state: "{{ state_attr('sensor.arlo_portail_status', 'Uptime') | int(0) }}"
+      - name: "Portail PIR Events"
+        unique_id: arlo_portail_pir_events
+        icon: mdi:motion-sensor
+        state: "{{ state_attr('sensor.arlo_portail_status', 'PIREvents') | int(0) }}"
+      - name: "Portail PIR Triggers"
+        unique_id: arlo_portail_pir_triggers
+        icon: mdi:motion-sensor
+        state: "{{ state_attr('sensor.arlo_portail_status', 'PIRTriggers') | int(0) }}"
+      - name: "Portail Motion Streams"
+        unique_id: arlo_portail_motion_streamed
+        icon: mdi:video
+        state: "{{ state_attr('sensor.arlo_portail_status', 'MotionStreamed') | int(0) }}"
+      - name: "Portail User Streams"
+        unique_id: arlo_portail_user_streamed
+        icon: mdi:video-switch
+        state: "{{ state_attr('sensor.arlo_portail_status', 'UserStreamed') | int(0) }}"
+      - name: "Portail Total Streams"
+        unique_id: arlo_portail_streamed
+        icon: mdi:filmstrip
+        state: "{{ state_attr('sensor.arlo_portail_status', 'Streamed') | int(0) }}"
+      - name: "Portail Battery Voltage"
+        unique_id: arlo_portail_bat_voltage
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+        icon: mdi:battery
+        state: "{{ state_attr('sensor.arlo_portail_status', 'Bat1Volt') | float(0) }}"
+      - name: "Portail Failed Streams"
+        unique_id: arlo_portail_failed_streams
+        icon: mdi:video-off
+        state: "{{ state_attr('sensor.arlo_portail_status', 'FailedStreams') | int(0) }}"
+      - name: "Portail Camera Online"
+        unique_id: arlo_portail_online
+        unit_of_measurement: "s"
+        icon: mdi:camera
+        state: "{{ state_attr('sensor.arlo_portail_status', 'CameraOnline') | int(0) }}"
+      - name: "Portail WiFi Channel"
+        unique_id: arlo_portail_wifi_channel
+        icon: mdi:wifi
+        state: "{{ state_attr('sensor.arlo_portail_status', 'WifiChannel') | int(0) }}"
+      - name: "Portail Firmware"
+        unique_id: arlo_portail_firmware
+        icon: mdi:chip
+        state: "{{ state_attr('sensor.arlo_portail_status', 'SystemFirmwareVersion') | default('unknown') }}"
+      - name: "Entree Temperature"
+        unique_id: arlo_entree_temp
+        unit_of_measurement: "°C"
+        device_class: temperature
+        state_class: measurement
+        icon: mdi:thermometer
+        state: "{{ state_attr('sensor.arlo_entree_status', 'Temperature') | float(-99) }}"
+      - name: "Entree Charging"
+        unique_id: arlo_entree_charging
+        icon: mdi:battery-charging
+        state: "{{ state_attr('sensor.arlo_entree_status', 'ChargingState') }}"
+      - name: "Entree Signal"
+        unique_id: arlo_entree_signal
+        icon: mdi:signal-cellular-3
+        state: "{{ state_attr('sensor.arlo_entree_status', 'SignalStrengthIndicator') | int(-1) }}"
+      - name: "Entree WiFi RSSI"
+        unique_id: arlo_entree_rssi
+        unit_of_measurement: "dBm"
+        device_class: signal_strength
+        state_class: measurement
+        icon: mdi:wifi
+        state: "{{ state_attr('sensor.arlo_entree_status', 'WifiRSSI') | int(-100) }}"
+      - name: "Entree Uptime"
+        unique_id: arlo_entree_uptime
+        icon: mdi:clock-outline
+        state: "{{ state_attr('sensor.arlo_entree_status', 'Uptime') }}"
+      - name: "Entree PIR Events"
+        unique_id: arlo_entree_pir_events
+        icon: mdi:motion-sensor
+        state: "{{ state_attr('sensor.arlo_portail_status', 'PIREvents') | int(0) }}"
+      - name: "Entree PIR Triggers"
+        unique_id: arlo_entree_pir_triggers
+        icon: mdi:run
+        state: "{{ state_attr('sensor.arlo_entree_status', 'PIRTriggers') | int(0) }}"
+      - name: "Entree Motion Streamed"
+        unique_id: arlo_entree_motion_streamed
+        icon: mdi:motion-play
+        state: "{{ state_attr('sensor.arlo_entree_status', 'MotionStreamed') | int(0) }}"
+      - name: "Entree User Streamed"
+        unique_id: arlo_entree_user_streamed
+        icon: mdi:account-eye
+        state: "{{ state_attr('sensor.arlo_entree_status', 'UserStreamed') | int(0) }}"
+      - name: "Entree Streamed"
+        unique_id: arlo_entree_streamed
+        icon: mdi:video-outline
+        state: "{{ state_attr('sensor.arlo_entree_status', 'Streamed') | int(0) }}"
+      - name: "Entree Battery Voltage"
+        unique_id: arlo_entree_bat_voltage
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+        icon: mdi:battery
+        state: "{{ state_attr('sensor.arlo_entree_status', 'Bat1Volt') | float(0) }}"
+      - name: "Entree Failed Streams"
+        unique_id: arlo_entree_failed_streams
+        icon: mdi:video-off-outline
+        state: "{{ state_attr('sensor.arlo_entree_status', 'FailedStreams') | int(0) }}"
+      - name: "Entree Online"
+        unique_id: arlo_entree_online
+        icon: mdi:access-point-check
+        state: "{{ state_attr('sensor.arlo_entree_status', 'CameraOnline') | int(0) }}"
+      - name: "Entree WiFi Channel"
+        unique_id: arlo_entree_wifi_channel
+        icon: mdi:wifi-cog
+        state: "{{ state_attr('sensor.arlo_entree_status', 'WifiChannel') | int(0) }}"
+      - name: "Entree Firmware"
+        unique_id: arlo_entree_firmware
+        icon: mdi:chip
+        state: "{{ state_attr('sensor.arlo_entree_status', 'SystemFirmwareVersion') | default('unknown') }}"
+
+  - binary_sensor:
+      - name: "Jardin 1 Spotlight"
+        unique_id: arlo_j1_spotlight
+        device_class: light
+        state: "{{ state_attr('sensor.arlo_jardin_1_status', 'SpotlightEnabled') == true }}"
+      - name: "Jardin 1 Critical Battery"
+        unique_id: arlo_j1_critical_bat
+        device_class: battery
+        state: "{{ state_attr('sensor.arlo_jardin_1_status', 'CriticalBatStatus') | int(0) > 0 }}"
+      - name: "Jardin 1 LED"
+        unique_id: arlo_j1_led
+        device_class: light
+        state: "{{ is_state('input_boolean.camera_jardin_1_led', 'on') }}"
+
+      - name: "Jardin 2 Spotlight"
+        unique_id: arlo_j2_spotlight
+        device_class: light
+        state: "{{ state_attr('sensor.arlo_jardin_2_status', 'SpotlightEnabled') == true }}"
+      - name: "Jardin 2 Critical Battery"
+        unique_id: arlo_j2_critical_bat
+        device_class: battery
+        state: "{{ state_attr('sensor.arlo_jardin_2_status', 'CriticalBatStatus') | int(0) > 0 }}"
+      - name: "Jardin 2 LED"
+        unique_id: arlo_j2_led
+        device_class: light
+        state: "{{ is_state('input_boolean.camera_jardin_2_led', 'on') }}"
+
+      - name: "Portail Spotlight"
+        unique_id: arlo_portail_spotlight
+        device_class: light
+        state: "{{ state_attr('sensor.arlo_portail_status', 'SpotlightEnabled') == true }}"
+      - name: "Portail Critical Battery"
+        unique_id: arlo_portail_critical_bat
+        device_class: battery
+        state: "{{ state_attr('sensor.arlo_portail_status', 'CriticalBatStatus') | int(0) > 0 }}"
+      - name: "Portail LED"
+        unique_id: arlo_portail_led
+        device_class: light
+        state: "{{ is_state('input_boolean.camera_portail_led', 'on') }}"
+      - name: "Entree Spotlight"
+        unique_id: arlo_entree_spotlight
+        device_class: light
+        state: "{{ state_attr('sensor.arlo_entree_status', 'SpotlightEnabled') == true }}"
+      - name: "Entree Critical Battery"
+        unique_id: arlo_entree_critical_bat
+        device_class: battery
+        state: "{{ state_attr('sensor.arlo_entree_status', 'CriticalBatStatus') | int(0) > 0 }}"
+      - name: "Entree LED"
+        unique_id: arlo_entree_led
+        device_class: light
+        state: "{{ is_state('input_boolean.camera_entree_led', 'on') }}"
+
+input_boolean:
+  camera_portail_armed:
+    name: "Camera Portail Armed"
+    icon: mdi:shield-lock
+  camera_portail_led:
+    name: "Camera Portail PIR LED"
+    icon: mdi:led-on
+  camera_entree_armed:
+    name: "Camera Entree Armed"
+    icon: mdi:shield-lock
+  camera_entree_led:
+    name: "Camera Entree PIR LED"
+    icon: mdi:led-on

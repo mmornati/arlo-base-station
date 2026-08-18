@@ -1,0 +1,36 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+ENV/
+env/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Test/cache
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.log
+
+# Docker
+*.bak
+
+# Local secrets
+config.yaml
+!config.yaml.example
+arlo_cameras.yaml
+!arlo_cameras.yaml.example

@@ -1,0 +1,92 @@
+#!/bin/sh /etc/rc.common
+START=99
+LOG=/tmp/s99arlo.log
+
+start() {
+    echo "$(date) starting" >> $LOG
+
+    GUEST_BR=br-guest
+    LAN_BR=br-lan
+    SERVER=192.168.1.48
+    GATEWAY=172.14.1.1
+    CAM_NET=192.168.2.0/24
+
+    # Wait for br-guest interface
+    for i in $(seq 1 30); do
+        ip link show $GUEST_BR >/dev/null 2>&1 && { echo "br-guest after ${i}s" >> $LOG; break; }
+        sleep 1
+    done
+
+    # 1. Virtual gateway IP (idempotent)
+    ip addr add $GATEWAY/24 dev $GUEST_BR 2>/dev/null || true
+
+    # 2. DHCP config
+    cat > /tmp/dni_udhcpd_guest.conf <<EOF
+pidfile /var/run/dni_guest_udhcpd.pid
+start 192.168.2.2
+end 192.168.2.50
+interface br-guest
+remaining yes
+auto_time 5
+lease_file /tmp/dni_udhcpd_guest.leases
+option subnet 255.255.255.0
+option router $GATEWAY
+option dns 1.1.1.1
+option dns 1.0.0.1
+option lease 1800
+static_lease 192.168.2.3 XX:XX:XX:XX:XX:XX JARDIN1
+static_lease 192.168.2.2 XX:XX:XX:XX:XX:XX JARDIN2
+static_lease 192.168.2.103 XX:XX:XX:XX:XX:XX PORTAIL
+static_lease 192.168.2.4 XX:XX:XX:XX:XX:XX ENTREE
+EOF
+
+    # Restart DHCP (kill all running instances first to avoid duplicates)
+    killall -9 dni_guest_udhcpd 2>/dev/null
+    if [ -f /var/run/dni_guest_udhcpd.pid ]; then
+        OLD_PID=$(cat /var/run/dni_guest_udhcpd.pid 2>/dev/null)
+        [ -n "$OLD_PID" ] && kill -9 $OLD_PID 2>/dev/null
+    fi
+    /sbin/dni_guest_udhcpd /tmp/dni_udhcpd_guest.conf >/dev/null 2>&1 &
+    echo "DHCP pid $!" >> $LOG
+
+    # 3. iptables: PREROUTING DNAT
+    # Delete ALL matching rules in a loop, then add exactly 1
+    while iptables -t nat -D PREROUTING -i $GUEST_BR -p tcp --dport 4000 -j DNAT --to-destination $SERVER:4000 2>/dev/null; do :; done
+    while iptables -t nat -D PREROUTING -i $GUEST_BR -p tcp --dport 4100 -j DNAT --to-destination $SERVER:4100 2>/dev/null; do :; done
+    iptables -t nat -A PREROUTING -i $GUEST_BR -p tcp --dport 4000 -j DNAT --to-destination $SERVER:4000
+    iptables -t nat -A PREROUTING -i $GUEST_BR -p tcp --dport 4100 -j DNAT --to-destination $SERVER:4100
+
+    # 4. iptables: POSTROUTING SNAT
+    while iptables -t nat -D POSTROUTING -s $SERVER -d $CAM_NET -j SNAT --to-source $GATEWAY 2>/dev/null; do :; done
+    iptables -t nat -A POSTROUTING -s $SERVER -d $CAM_NET -j SNAT --to-source $GATEWAY
+
+    # 5. iptables: FORWARD cleanup (remove old patterns) + re-add at top
+    while iptables -D FORWARD -p tcp -d $SERVER --dport 4000 -j ACCEPT 2>/dev/null; do :; done
+    while iptables -D FORWARD -p tcp -d $SERVER --dport 4100 -j ACCEPT 2>/dev/null; do :; done
+    while iptables -D FORWARD -s $SERVER -d $CAM_NET -j ACCEPT 2>/dev/null; do :; done
+    while iptables -D FORWARD -d $SERVER -j ACCEPT 2>/dev/null; do :; done
+    while iptables -D FORWARD -s $SERVER -j ACCEPT 2>/dev/null; do :; done
+    while iptables -D FORWARD -d $CAM_NET -j ACCEPT 2>/dev/null; do :; done
+    while iptables -D FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT 2>/dev/null; do :; done
+
+    # Now insert at position 1 (one at a time, each pushes previous down)
+    iptables -I FORWARD 1 -i $GUEST_BR -d $SERVER -j ACCEPT
+    iptables -I FORWARD 1 -i $LAN_BR -o $GUEST_BR -s $SERVER -j ACCEPT
+    iptables -I FORWARD 1 -i $LAN_BR -o $GUEST_BR -d $CAM_NET -j ACCEPT
+
+    echo "$(date) done" >> $LOG
+}
+
+stop() {
+    while iptables -t nat -D PREROUTING -i br-guest -p tcp --dport 4000 -j DNAT --to-destination 192.168.1.48:4000 2>/dev/null; do :; done
+    while iptables -t nat -D PREROUTING -i br-guest -p tcp --dport 4100 -j DNAT --to-destination 192.168.1.48:4100 2>/dev/null; do :; done
+    while iptables -t nat -D POSTROUTING -s 192.168.1.48 -d 192.168.2.0/24 -j SNAT --to-source 172.14.1.1 2>/dev/null; do :; done
+    while iptables -D FORWARD -i br-guest -d 192.168.1.48 -j ACCEPT 2>/dev/null; do :; done
+    while iptables -D FORWARD -i br-lan -o br-guest -s 192.168.1.48 -j ACCEPT 2>/dev/null; do :; done
+    while iptables -D FORWARD -i br-lan -o br-guest -d 192.168.2.0/24 -j ACCEPT 2>/dev/null; do :; done
+}
+
+restart() {
+    stop
+    start
+}
