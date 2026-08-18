@@ -33,7 +33,7 @@ option subnet 255.255.255.0
 option router $GATEWAY
 option dns 1.1.1.1
 option dns 1.0.0.1
-option lease 1800
+option lease 86400
 static_lease 192.168.2.3 XX:XX:XX:XX:XX:XX JARDIN1
 static_lease 192.168.2.2 XX:XX:XX:XX:XX:XX JARDIN2
 static_lease 192.168.2.103 XX:XX:XX:XX:XX:XX PORTAIL
