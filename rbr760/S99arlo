@@ -28,7 +28,7 @@ end 192.168.2.50
 interface br-guest
 remaining yes
 auto_time 5
-lease_file /tmp/dni_guest_udhcpd.leases
+lease_file /tmp/dni_udhcpd_guest.leases
 option subnet 255.255.255.0
 option router $GATEWAY
 option dns 1.1.1.1
