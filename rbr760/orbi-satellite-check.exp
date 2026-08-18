@@ -1,0 +1,83 @@
+#!/usr/bin/expect -f
+#
+# Orbi RBR760 - satellite / mesh health diagnostic
+#
+# PURPOSE
+#   After any `wifi reload` / `wifi` restart, the Orbi's 5GHz-low radio
+#   (wifi2) can come up with an EMPTY SSID on its VAPs (ath2 / ath21).
+#   When that happens the LAN `hyd` mesh daemon fails to initialise and
+#   the satellites show as "disconnected" in the GUI even though their
+#   backhaul radios are still physically associated.
+#
+#   This script runs ONLY READ-ONLY diagnostics so you can confirm the
+#   problem quickly. It changes nothing on the router.
+#
+# USAGE
+#   Edit the three placeholders below, then run:
+#     expect orbi-satellite-check.exp
+#
+# WHAT IT CHECKS
+#   1. iwconfig ath2 / ath21   -> are the 5GHz-low SSIDs empty?
+#   2. ps w | grep hyd         -> is the LAN hyd instance (-P 7777) present?
+#   3. iw dev                  -> all radios / VAPs present?
+#   4. hostapd backhaul        -> satellites physically associated?
+#   5. ping satellites         -> reachable on the LAN?
+#
+# INTERPRETATION
+#   Empty ESSID on ath2/ath21 AND no `hyd -C .../hyd-lan.conf -P 7777`
+#   process = you have the known bug. Fix (after confirming) with:
+#     wifi down wifi2 ; wifi up wifi2
+#     /etc/init.d/hyd restart
+#   (see docs/lessons-learned.md, lesson 19)
+
+set timeout 10
+set router_ip "<your_router_ip>"
+set username "admin"
+set password {<your_router_password>}
+
+spawn telnet $router_ip
+expect {
+    "login:" { send "$username\r" }
+    "Login:" { send "$username\r" }
+    timeout { puts "ERROR: timeout waiting for login prompt"; exit 1 }
+}
+expect {
+    "password:" { send "$password\r" }
+    "Password:" { send "$password\r" }
+    timeout { puts "ERROR: timeout waiting for password prompt"; exit 1 }
+}
+expect {
+    -re {# $} { }
+    "#" { }
+    timeout { puts "ERROR: timeout waiting for shell prompt"; exit 1 }
+}
+
+proc run {cmd} {
+    send -- "$cmd\r"
+    expect {
+        -re {# $} {}
+        "#" {}
+        timeout { puts "ERROR: timeout after: $cmd" }
+    }
+}
+
+puts "\n===== 1. 5GHz-low VAP SSIDs (empty = bug) ====="
+run "iwconfig ath2"
+run "iwconfig ath21"
+
+puts "\n===== 2. hyd mesh daemon (expect TWO: -P 7777 LAN + -P 8888 guest) ====="
+run "ps w | grep 'hyd ' | grep -v grep"
+
+puts "\n===== 3. Radios / VAPs present ====="
+run "iw dev | grep -E 'Interface|ssid'"
+
+puts "\n===== 4. Backhaul satellites (5GHz-high ath1) ====="
+run "hostapd_cli -i ath1 -p /var/run/hostapd-wifi1 list_sta"
+
+puts "\n===== 5. Satellite reachability ====="
+run "ping -c1 -W2 <satellite1_ip>"
+run "ping -c1 -W2 <satellite2_ip>"
+
+send "exit\r"
+expect eof
+puts "\n===== DONE ====="
